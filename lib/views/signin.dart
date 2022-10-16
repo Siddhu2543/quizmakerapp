@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:quizmaker/helper/constants.dart';
+import 'package:quizmaker/models/account.dart';
 import 'package:quizmaker/services/auth.dart';
+import 'package:quizmaker/services/database.dart';
 import 'package:quizmaker/widget/widget.dart';
 import 'home.dart';
 
@@ -17,27 +19,36 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
   final _formKey = GlobalKey<FormState>();
   final AuthService _authService = AuthService();
+  final DatabaseService databaseService = DatabaseService(uid: "");
   String email = '', password = '';
 
   bool isLoading = false;
 
   signIn() async {
-    if(_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate()) {
       setState(() {
         isLoading = true;
       });
-      await _authService.signInEmailAndPass(email, password).then((val) => {
-        if(val != null){
-          setState(() {
-            isLoading = true;
-          }),
-          Constants.saveUserLoggedInSharedPreference(true),
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Home()))
-        }else{
-          setState(() {
-            isLoading = false;
-          }),
-        }
+      await _authService.signInEmailAndPass(email, password).then((val) async {
+        Account account = await Account.getAccountFromEmail(email);
+        return {
+            if (val != null)
+              {
+                Constants.saveUserDetailsSharedPreference(account.toList()),
+                setState(() {
+                  isLoading = true;
+                }),
+                Constants.saveUserLoggedInSharedPreference(true),
+                Navigator.pushReplacement(
+                    context, MaterialPageRoute(builder: (context) => Home()))
+              }
+            else
+              {
+                setState(() {
+                  isLoading = false;
+                }),
+              }
+          };
       });
     }
   }
@@ -56,88 +67,97 @@ class _SignInState extends State<SignIn> {
         backgroundColor: Colors.transparent,
         //brightness: Brightness.li,
       ),
-      body: isLoading ? Container(
-        child: Center(child: CircularProgressIndicator()),
-      ) : Form(
-        key: _formKey,
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            children: [
-              Spacer(),
-              Container(
+      body: isLoading
+          ? Container(
+              child: Center(child: CircularProgressIndicator()),
+            )
+          : Form(
+              key: _formKey,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
-                    TextFormField(
-                      validator: (val) { return val!.isEmpty ? "Enter email id" : null;},
-                      decoration: InputDecoration(hintText: "Email"),
-                      onChanged: (val) {
-                        email = val;
-                      },
-                    ),
-                    SizedBox(
-                      height: 6,
-                    ),
-                    TextFormField(
-                      validator: (val) { return val!.isEmpty ? "Enter password" : null;},
-                      decoration: InputDecoration(hintText: "Password"),
-                      onChanged: (val) {
-                        password = val;
-                      },
-                    ),
-                    SizedBox(
-                      height: 24,
-                    ),
-                    GestureDetector(
-                      onTap: (){
-                        signIn();
-                      },
-                      child: Container(
-                        alignment: Alignment.center,
-                        width: MediaQuery.of(context).size.width,
-                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                        decoration: BoxDecoration(
-                            color: Colors.blue,
-                            borderRadius: BorderRadius.circular(30)),
-                        child: Text(
-                          "Sign In",
-                          style: TextStyle(fontSize: 16, color: Colors.white),
-                        ),
+                    Spacer(),
+                    Container(
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            validator: (val) {
+                              return val!.isEmpty ? "Enter email id" : null;
+                            },
+                            decoration: InputDecoration(hintText: "Email"),
+                            onChanged: (val) {
+                              email = val;
+                            },
+                          ),
+                          SizedBox(
+                            height: 6,
+                          ),
+                          TextFormField(
+                            obscureText: true,
+                            validator: (val) {
+                              return val!.isEmpty ? "Enter password" : null;
+                            },
+                            decoration: InputDecoration(hintText: "Password"),
+                            onChanged: (val) {
+                              password = val;
+                            },
+                          ),
+                          SizedBox(
+                            height: 24,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              signIn();
+                            },
+                            child: Container(
+                              alignment: Alignment.center,
+                              width: MediaQuery.of(context).size.width,
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 24, vertical: 20),
+                              decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(30)),
+                              child: Text(
+                                "Sign In",
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Don\'t have an account? ',
+                                  style: TextStyle(
+                                      color: Colors.black87, fontSize: 17)),
+                              GestureDetector(
+                                onTap: () {
+                                  widget.toogleView();
+                                },
+                                child: Container(
+                                  child: Text('Sign Up',
+                                      style: TextStyle(
+                                          color: Colors.black87,
+                                          decoration: TextDecoration.underline,
+                                          fontSize: 17)),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                     SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('Don\'t have an account? ',
-                            style:
-                                TextStyle(color: Colors.black87, fontSize: 17)),
-                        GestureDetector(
-                          onTap: () {
-                            widget.toogleView();
-                          },
-                          child: Container(
-                            child: Text('Sign Up',
-                                style: TextStyle(
-                                    color: Colors.black87,
-                                    decoration: TextDecoration.underline,
-                                    fontSize: 17)),
-                          ),
-                        ),
-                      ],
-                    ),
+                      height: 80,
+                    )
                   ],
                 ),
               ),
-              SizedBox(
-                height: 80,
-              )
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

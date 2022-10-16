@@ -1,10 +1,10 @@
-import 'dart:html';
-
+// import 'dart:html';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:quizmaker/services/database.dart';
 import 'package:quizmaker/views/create_quiz.dart';
 import 'package:quizmaker/views/quiz_play.dart';
+import 'package:quizmaker/views/side_bar.dart';
 import 'package:quizmaker/widget/widget.dart';
 import 'package:firebase_database/firebase_database.dart';
 
@@ -79,13 +79,14 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      drawer: SideBar(),
       appBar: AppBar(
         centerTitle: true,
         title: AppLogo(),
         brightness: Brightness.light,
         elevation: 0.0,
         backgroundColor: Colors.transparent,
+        iconTheme: IconThemeData(color: Colors.blue),
         //brightness: Brightness.li,
       ),
       body: quizList(),

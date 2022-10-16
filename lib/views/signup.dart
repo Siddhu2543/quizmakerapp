@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:quizmaker/helper/constants.dart';
+import 'package:quizmaker/models/account.dart';
 import 'package:quizmaker/services/auth.dart';
 import 'package:quizmaker/services/database.dart';
 import 'package:quizmaker/views/home.dart';
 import 'package:quizmaker/widget/widget.dart';
+import 'package:intl/intl.dart';
 
 class SignUp extends StatefulWidget {
   final Function toogleView;
+  String errMsg = "";
 
   SignUp({required this.toogleView});
 
@@ -22,7 +25,17 @@ class _SignUpState extends State<SignUp> {
 
   // text feild
   bool _loading = false;
-  String email = '', password = '', name = "";
+  String email = '',
+      password = '',
+      name = "",
+      dob = "",
+      userId = "",
+      branch = "",
+      semester = "",
+      rollNo = "",
+      role = "";
+
+  TextEditingController datecontroller = TextEditingController();
 
   getInfoAndSignUp() async {
     if (_formKey.currentState!.validate()) {
@@ -33,14 +46,42 @@ class _SignUpState extends State<SignUp> {
       await authService
           .signUpWithEmailAndPassword(email, password)
           .then((value) {
-        Map<String, String> userInfo = {
-          "userName": name,
-          "email": email,
-        };
+        if (value == null) {
+          setState(() {
+            _loading = false;
+          });
+          widget.errMsg =
+              "The email address is already in use by another account. Try with some different Email address.";
+          return;
+        }
+        Map<String, String>? userInfo = null;
+        if (role == "Student") {
+          userInfo = {
+            "userName": name,
+            "email": email,
+            "dob": dob,
+            "role": role,
+            "userId": userId,
+            "branch": branch,
+            "semester": semester,
+            "rollNo": rollNo
+          };
+        } else if (role == "Faculty") {
+          userInfo = {
+            "userName": name,
+            "email": email,
+            "dob": dob,
+            "role": role,
+            "userId": userId,
+            "branch": branch
+          };
+        }
 
         databaseService.addData(userInfo);
+        Account accountDetails = Account(name: name, email: email, dob: dob, role: role, userId: userId, branch: branch, semester: semester, rollNo: rollNo);
 
         Constants.saveUserLoggedInSharedPreference(true);
+        Constants.saveUserDetailsSharedPreference(accountDetails.toList());
 
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => Home()));
@@ -66,9 +107,15 @@ class _SignUpState extends State<SignUp> {
             ? Container(
                 child: Center(child: CircularProgressIndicator()),
               )
-            : Column(
+            : ListView(
                 children: [
-                  Spacer(),
+                  if (widget.errMsg != "")
+                    Text(widget.errMsg,
+                        style: TextStyle(
+                            color: Colors.red[500],
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14)),
+                  // Spacer(),
                   Form(
                     key: _formKey,
                     child: Container(
@@ -92,6 +139,135 @@ class _SignUpState extends State<SignUp> {
                             decoration: InputDecoration(hintText: "Email"),
                             onChanged: (val) {
                               email = val;
+                            },
+                          ),
+                          SizedBox(
+                            height: 6,
+                          ),
+                          TextFormField(
+                            controller: datecontroller,
+                            decoration: InputDecoration(
+                              hintText: dob == "" ? "Date of Birth" : dob,
+                            ),
+                            readOnly: true,
+                            validator: (value) {
+                              if (dob == "") return "Enter Date of Birth";
+                              return null;
+                            },
+                            onTap: () async {
+                              DateTime? pickDob = await showDatePicker(
+                                  context: context,
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime(1900),
+                                  lastDate: DateTime.now());
+
+                              if (pickDob != null) {
+                                dob = DateFormat('dd-MM-yyyy').format(pickDob);
+                                datecontroller.text = dob;
+                              }
+                            },
+                          ),
+                          SizedBox(
+                            height: 6,
+                          ),
+                          DropdownButtonFormField(
+                              decoration: InputDecoration(
+                                hintText: "Role",
+                              ),
+                              validator: (val) {
+                                return val == null ? "Selec a role" : null;
+                              },
+                              items: <String>["Student", "Faculty"]
+                                  .map<DropdownMenuItem<String>>((String e) {
+                                return DropdownMenuItem(
+                                    value: e, child: Text(e));
+                              }).toList(),
+                              onChanged: (val) {
+                                role = val as String;
+                              }),
+                          SizedBox(
+                            height: 6,
+                          ),
+                          TextFormField(
+                            validator: (val) => val != ""
+                                ? null
+                                : "Enter the Student/Faculty ID",
+                            decoration:
+                                InputDecoration(hintText: "Student/Faculty ID"),
+                            onChanged: (val) {
+                              userId = val;
+                            },
+                          ),
+                          SizedBox(
+                            height: 6,
+                          ),
+                          DropdownButtonFormField(
+                              decoration: InputDecoration(
+                                hintText: "Branch",
+                              ),
+                              validator: (val) {
+                                return val == null ? "Selec a Branch" : null;
+                              },
+                              items: <String>[
+                                "MH",
+                                "CL",
+                                "CH",
+                                "IC",
+                                "IT",
+                                "CE",
+                                "EC",
+                                "FOD",
+                                "FOP"
+                              ].map<DropdownMenuItem<String>>((String e) {
+                                return DropdownMenuItem(
+                                    value: e, child: Text(e));
+                              }).toList(),
+                              onChanged: (val) {
+                                branch = val as String;
+                              }),
+                          SizedBox(
+                            height: 6,
+                          ),
+                          DropdownButtonFormField(
+                              decoration: InputDecoration(
+                                hintText: "Semester (For Students only)",
+                              ),
+                              validator: (val) {
+                                if (role != "Faculty")
+                                  return val == null
+                                      ? "Selec a Semester"
+                                      : null;
+                              },
+                              items: <String>[
+                                "1",
+                                "2",
+                                "3",
+                                "4",
+                                "5",
+                                "6",
+                                "7",
+                                "8"
+                              ].map<DropdownMenuItem<String>>((String e) {
+                                return DropdownMenuItem(
+                                    value: e, child: Text(e));
+                              }).toList(),
+                              onChanged: (val) {
+                                semester = val as String;
+                              }),
+                          SizedBox(
+                            height: 6,
+                          ),
+                          TextFormField(
+                            validator: (val) {
+                              if (role != "Faculty")
+                                return val == ""
+                                    ? "Enter a valid Roll Number"
+                                    : null;
+                            },
+                            decoration: InputDecoration(
+                                hintText: "Roll Number (For Students only)"),
+                            onChanged: (val) {
+                              rollNo = val;
                             },
                           ),
                           SizedBox(
