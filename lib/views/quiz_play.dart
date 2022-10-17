@@ -147,7 +147,7 @@ class _QuizPlayState extends State<QuizPlay> {
       "total": total
     };
     databaseService.addResponseDate(response);
-    // Navigator.pushReplacement(context, MaterialPageRoute(builder: (builder) => Home()));
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (builder) => Home()));
   }
 }
 
