@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:quizmaker/models/user.dart';
 
 class AuthService{
@@ -6,7 +7,7 @@ class AuthService{
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   UDUser? _userFromFirebaseUser(User user) {
-    return user != null ? UDUser(uid:  user.uid) : null;
+    return UDUser(uid:  user.uid);
   }
 
 
@@ -16,7 +17,9 @@ class AuthService{
       User? firebaseUser = authResult.user;
       return _userFromFirebaseUser(firebaseUser!);
     }catch(e){
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
@@ -27,7 +30,9 @@ class AuthService{
       User? user = authResult.user;
       return _userFromFirebaseUser(user!);
     }catch(e){
-      print(e.toString());
+      if (kDebugMode) {
+        print(e.toString());
+      }
       return null;
     }
 
@@ -38,7 +43,9 @@ class AuthService{
     try{
       return await _auth.signOut();
     }catch(e){
-      print(e.toString());
+      if (kDebugMode) {
+        print(e.toString());
+      }
       return null;
     }
   }
@@ -47,7 +54,9 @@ class AuthService{
     try{
       return await _auth.sendPasswordResetEmail(email: email);
     }catch(e){
-      print(e.toString());
+      if (kDebugMode) {
+        print(e.toString());
+      }
       return null;
     }
   }

@@ -5,6 +5,8 @@ import 'package:quizmaker/helper/constants.dart';
 import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:quizmaker/services/auth.dart';
 import 'package:quizmaker/views/account_details.dart';
+import 'package:quizmaker/views/attempt_history.dart';
+import 'package:quizmaker/views/all_quiz_list.dart';
 import 'package:quizmaker/views/signin.dart';
 import 'package:quizmaker/widget/about.dart';
 import 'home.dart';
@@ -120,6 +122,7 @@ class _SideBarState extends State<SideBar> {
               ),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (builder) => AttemptHistory(email: userDetails[1],)));
               },
             ),
           if (userDetails[3] == "Faculty")
@@ -138,6 +141,7 @@ class _SideBarState extends State<SideBar> {
               ),
               onTap: () {
                 Navigator.pop(context);
+                Navigator.pushReplacement(context, MaterialPageRoute(builder: (builder) => AllQuizList(email: userDetails[1],)));
               },
             ),
           if (userDetails[3] == "Faculty")

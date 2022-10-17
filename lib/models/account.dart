@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:quizmaker/services/database.dart';
 
 class Account {
@@ -43,7 +42,7 @@ class Account {
     var data = docs[0].data();
     var id = docs[0].id;
     if (data["role"] == "Student") {
-      Account account = await Account(
+      Account account = Account(
           id: id,
           name: data["userName"],
           email: data["email"],
@@ -55,7 +54,7 @@ class Account {
           rollNo: data["rollNo"]);
       return account;
     } else {
-      Account account = await Account(
+      Account account = Account(
           id: id,
           name: data["userName"],
           email: data["email"],

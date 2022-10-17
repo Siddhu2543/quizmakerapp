@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import 'package:quizmaker/helper/constants.dart';
 
 class DatabaseService {
@@ -40,8 +41,43 @@ class DatabaseService {
     });
   }
 
-  getQuizData() async {
+  addResponseDate(response) async {
+    await FirebaseFirestore.instance.collection("Response").add(response).catchError((e){
+      print(e);
+    });
+  }
+
+  Future<Stream<QuerySnapshot<Map<String, dynamic>>>> getQuizData() async {
     return await FirebaseFirestore.instance.collection("Quiz").snapshots();
+  }
+
+  getQuizDataByFaculty() async {
+    String email = "";
+    await Constants.getUserDetailsSharedPreference().then((value) {
+      email = value[1];
+    });
+    return await FirebaseFirestore.instance.collection("Quiz").where("maker", isEqualTo: email).snapshots();
+  }
+
+  getQuizDataByStudent() async {
+    String branch = "", semester = "";
+    await Constants.getUserDetailsSharedPreference().then((value) {
+      branch = value[5];
+      semester = value[6];
+    });
+    return await FirebaseFirestore.instance.collection("Quiz").where("branch", isEqualTo: branch).where("semester", isEqualTo: semester).snapshots();
+  }
+
+  getResponseData(email) async {
+    return await FirebaseFirestore.instance.collection("Response").where("stdEmail", isEqualTo: email).snapshots();
+  }
+
+  getQuizListForFaculty(email) async {
+    return await FirebaseFirestore.instance.collection("Quiz").where("maker", isEqualTo: email).snapshots();
+  }
+
+  getResponseListForFaculty(quizTitle) async {
+    return await FirebaseFirestore.instance.collection("Response").where("quizTitle", isEqualTo: quizTitle).snapshots();
   }
 
   getQuestionData(String quizId) async {

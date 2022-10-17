@@ -1,12 +1,12 @@
 // import 'dart:html';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:quizmaker/helper/constants.dart';
 import 'package:quizmaker/services/database.dart';
 import 'package:quizmaker/views/create_quiz.dart';
 import 'package:quizmaker/views/quiz_play.dart';
+import 'package:quizmaker/views/quiz_response_list.dart';
 import 'package:quizmaker/views/side_bar.dart';
 import 'package:quizmaker/widget/widget.dart';
-import 'package:firebase_database/firebase_database.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -15,6 +15,8 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   Stream? quizStream;
+  String role = "";
+  String email = "", rollNo = "";
   DatabaseService databaseService = new DatabaseService(uid: '');
 
   Widget quizList() {
@@ -24,12 +26,6 @@ class _HomeState extends State<Home> {
           StreamBuilder(
             stream: quizStream,
             builder: (context, AsyncSnapshot<dynamic> snapshot) {
-              // messages.clear();
-              // DataSnapshot dataVals = snapshot.data as DataSnapshot;
-              // Map<dynamic, dynamic> vals = dataVals.value as Map;
-              // vals.forEach((key, values) {
-              //   messages.add(values);
-              // });
               return snapshot.hasData == false
                   ? Container()
                   : ListView.builder(
@@ -41,22 +37,14 @@ class _HomeState extends State<Home> {
                         final data = docs[index].data();
                         final id = docs[index].id;
                         return QuizTile(
+                          role: role,
                           noOfQuestions: snapshot.data!.docs.length,
-                          // imageUrl:
-                          //     snapshot.data!.docs[index].data.get('quizImgUrl'),
-                          // title:
-                          //     snapshot.data!.docs[index].data('quizTitle'),
-                          // description:
-                          //     snapshot.data!.docs[index].data('quizDesc'),
-                          // id: snapshot.data!.docs[index].data("id"),
-                          imageUrl:
-                              "${data['quizImgUrl']}",
-                          title:
-                              "${data['quizTitle']}",
-                          description:
-                              "${data['quizDesc']}",
-                          id: 
-                              "$id",
+                          imageUrl: "${data['quizImgUrl']}",
+                          title: "${data['quizTitle']}",
+                          description: "${data['quizDesc']}",
+                          id: "$id",
+                          email: email,
+                          rollNo: rollNo,
                         );
                       });
             },
@@ -68,11 +56,26 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    databaseService.getQuizData().then((value) {
-      setState(() {
-        quizStream = value;
-      });
-    });
+    Constants.getUserDetailsSharedPreference().then(
+      (value) {
+        role = value[3];
+        email = value[1];
+        rollNo = value[7];
+        if (value[3] == "Faculty") {
+          databaseService.getQuizDataByFaculty().then((value) {
+            setState(() {
+              quizStream = value;
+            });
+          });
+        } else {
+          databaseService.getQuizDataByStudent().then((value) {
+            setState(() {
+              quizStream = value;
+            });
+          });
+        }
+      },
+    );
     super.initState();
   }
 
@@ -90,13 +93,13 @@ class _HomeState extends State<Home> {
         //brightness: Brightness.li,
       ),
       body: quizList(),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: role == "Faculty" ? FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
           Navigator.push(
               context, MaterialPageRoute(builder: (context) => CreateQuiz()));
         },
-      ),
+      ) : Container(),
     );
   }
 }
@@ -104,21 +107,29 @@ class _HomeState extends State<Home> {
 class QuizTile extends StatelessWidget {
   final String imageUrl, title, id, description;
   final int noOfQuestions;
+  final String role;
 
+  final String email, rollNo;
   QuizTile(
-      {required this.title,
+      {required this.role,
+      required this.title,
       required this.imageUrl,
       required this.description,
       required this.id,
-      required this.noOfQuestions});
+      required this.noOfQuestions,
+      required this.email,
+      required this.rollNo});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: (){
-        Navigator.push(context, MaterialPageRoute(
-          builder: (context) => QuizPlay(id)
-        ));
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => role == "Faculty" ? QuizResponseList(
+                      quizTitle: title,
+                    ) : QuizPlay(quizId: id, email: email, quizTitle: title, rollNo: rollNo,)));
       },
       child: Container(
         margin: EdgeInsets.only(bottom: 8),
@@ -131,7 +142,7 @@ class QuizTile extends StatelessWidget {
               Image.network(
                 imageUrl,
                 fit: BoxFit.cover,
-                width: MediaQuery.of(context).size.width-48,
+                width: MediaQuery.of(context).size.width - 48,
               ),
               Container(
                 color: Colors.black26,
@@ -146,7 +157,9 @@ class QuizTile extends StatelessWidget {
                             color: Colors.white,
                             fontWeight: FontWeight.w500),
                       ),
-                      SizedBox(height: 4,),
+                      SizedBox(
+                        height: 4,
+                      ),
                       Text(
                         description,
                         style: TextStyle(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:quizmaker/helper/constants.dart';
 import 'package:quizmaker/models/account.dart';
-import 'package:quizmaker/services/auth.dart';
+// import 'package:quizmaker/services/auth.dart';
 import 'package:quizmaker/services/database.dart';
 import 'package:quizmaker/views/side_bar.dart';
 import 'package:quizmaker/widget/widget.dart';
@@ -16,7 +16,7 @@ class AccountDetails extends StatefulWidget {
 
 class _AccountDetailsState extends State<AccountDetails> {
   List<String> userDetails = List<String>.filled(8, "");
-  AuthService _authService = AuthService();
+  // AuthService _authService = AuthService();
   DatabaseService databaseService = DatabaseService(uid: "");
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
@@ -38,7 +38,7 @@ class _AccountDetailsState extends State<AccountDetails> {
       Account account = await Account.getAccountFromEmail(userDetails[1]);
       Constants.saveUserDetailsSharedPreference(account.toList());
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (builder) => AccountDetails()));
+          context, MaterialPageRoute(builder: (builder) => const AccountDetails()));
     }
   }
 

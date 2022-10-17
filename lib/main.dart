@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:quizmaker/helper/authenticate.dart';
 import 'package:quizmaker/helper/constants.dart';
 import 'package:quizmaker/views/home.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
@@ -12,13 +10,15 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   // This widget is the root of your application.
   @override
-  _MyAppState createState() => _MyAppState();
+  createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {

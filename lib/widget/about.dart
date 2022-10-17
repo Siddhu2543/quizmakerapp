@@ -32,31 +32,13 @@ class About extends StatelessWidget {
             companyColor: Colors.blue,
             logo: AssetImage('icon_flutter.png'),
             email: 'vadgamasiddharth9@gmail.com',
-            companyName: 'Siddharth Vadgama',
+            companyName: 'Quiz Maker Application',
             phoneNumber: '+91123456789',
             dividerThickness: 2,
             website: 'https://github.com/Siddhu2543/quizmakerapp',
-            githubUserName: 'Siddhu2543',
-            tagLine: 'Flutter Developer',
+            githubUserName: 'Siddhu2543/quizmakerapp',
+            tagLine: 'Flutter Project',
           ),
-          Container(
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              boxShadow: [BoxShadow(color: Colors.black, blurRadius: 2)],
-              color: Colors.white,
-            ),
-            height: 150,
-            padding: EdgeInsets.symmetric(horizontal: 24),
-            margin: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-            child: Text(
-              "Quiz Maker Application for University use where Faculties can create quizzes and set to whom it will be available and Students will get to attempt quizzes accordingly!",
-              style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 18,
-                  fontStyle: FontStyle.normal),
-            ),
-          )
         ],
       ),
       bottomNavigationBar: ContactUsBottomAppBar(
